@@ -7,6 +7,26 @@ let isKeyPressed = {
     // ... Other keys to check for custom key combinations
 };
 
+function sendMessage(content) {
+    chrome.storage.sync.get(['settingsWebhook'], function(items) {
+        if(items.settingsWebhook){
+
+            const request = new XMLHttpRequest();
+            request.open("POST", items.settingsWebhook);
+
+            request.setRequestHeader('Content-type', 'application/json');
+
+            const params = {
+                DMQuickNote: content,
+            }
+
+            request.send(JSON.stringify(params));
+        }
+    });
+
+}
+
+
 let isShortcutPressed = false;
 
 document.onkeydown = keyDownEvent => {
@@ -48,11 +68,13 @@ const copyListener = (event) => {
 
         event.clipboardData.setData("text/plain", `${helper.innerText}\n${pageLink}`);
         event.clipboardData.setData("text/html", `${helper.innerHTML}<br>${pageLink}`);
+        sendMessage(`${helper.innerText}\n${pageLink}`);
+
+
         event.preventDefault();
     }
     isShortcutPressed = false;
 };
 
 document.addEventListener("copy", copyListener, true);
-
 //Must reload extension for modifications to take effect.
